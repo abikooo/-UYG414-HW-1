@@ -1,0 +1,14 @@
+# prometheus.yml
+# --------------
+# Prometheus scrape configuration.
+# Prometheus will poll the /metrics endpoint of the SmartText API every 15s.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "smarttext-api"
+    static_configs:
+      - targets: ["api:8000"]   # "api" is the docker-compose service name
+    metrics_path: /metrics

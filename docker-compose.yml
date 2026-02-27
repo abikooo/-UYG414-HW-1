@@ -1,0 +1,48 @@
+# docker-compose.yml
+# ------------------
+# Runs two services locally:
+#   api         — SmartText API on port 8000
+#   prometheus  — Prometheus scraping /metrics on port 9090
+#
+# Usage:
+#   docker-compose up --build
+#   docker-compose down
+
+version: "3.9"
+
+services:
+
+  # ── SmartText API ──────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      target: runtime
+    container_name: smarttext-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Override any of these via a .env file or shell env vars
+      - API_KEY=${API_KEY:-dev-secret-key}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DEBUG=${DEBUG:-false}
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # ── Prometheus (5. Observability) ──────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: smarttext-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - api
+    restart: unless-stopped

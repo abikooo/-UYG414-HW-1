@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.eggs/
+dist/
+build/
+.eggs/
+
+# Virtual-env
+.venv/
+venv/
+env/
+
+# Test & coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local config
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+*.tar
