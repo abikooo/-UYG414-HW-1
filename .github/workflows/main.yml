@@ -1,0 +1,57 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Automated Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api_gateway, auth_service, log_service, notification_service]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          cd project/${{ matrix.service }}
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run tests
+        run: |
+          cd project/${{ matrix.service }}
+          pytest
+          
+  build:
+    name: Build & Push Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api_gateway, auth_service, log_service, notification_service]
+        
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Build and Load
+        uses: docker/build-push-action@v4
+        with:
+          context: ./project/${{ matrix.service }}
+          push: false
+          tags: ${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

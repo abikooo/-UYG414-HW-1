@@ -7,6 +7,8 @@ UYG414 Special Topics in Software Development — built incrementally across ass
 ## Repo Structure
   ├── hw1/    — HW#1: Core Service
   ├── hw2/    — HW#2: Distributed System
+  ├── project/— Evolution of services (Latest)
+  ├── .github/ — CI/CD Pipeline
   └── README.md
 
 ## Stage 1 — HW#1: Core Service
@@ -62,6 +64,29 @@ cp .env.example .env
 docker-compose up --build
 ```
 
+## Stage 3 — HW#3: Production Deployment & DevOps
+The project was migrated to a production-ready stack with automated lifecycle management. I added a CI/CD pipeline using GitHub Actions. It runs tests and builds Docker images on every push. I also created Kubernetes manifests for cloud-native orchestration. Standardized health checks were added across all services for monitoring.
+
+### Key DevOps Features:
+- **CI/CD**: GitHub Actions workflow in `.github/workflows/main.yml`.
+- **Testing**: Automated unit tests using `pytest` and `httpx`.
+- **Orchestration**: Kubernetes manifests in `project/k8s/` for Deployments, Services, ConfigMaps, and Secrets.
+- **Environment Management**: Decoupled configuration using K8s primitives.
+
+How to run tests:
+```bash
+cd project/api_gateway
+python -m pytest
+```
+
+How to deploy (Kubernetes):
+```bash
+cd project
+kubectl apply -f k8s/config.yaml
+kubectl apply -f k8s/infrastructure.yaml
+kubectl apply -f k8s/services.yaml
+```
+
 ## Environment Variables
 Variable | Used In | Description | Example
 ---|---|---|---
@@ -91,3 +116,7 @@ Async Messaging (RabbitMQ) | log_service pushing to notification_service | 2
 AI Integration | Anthropic API in log_service | 1, 2
 Observability | structlog JSON formatting and /metrics endpoint | 1, 2
 Security basics | bcrypt password hashes and slowapi rate limits | 1, 2
+CI/CD Pipeline | GitHub Actions workflow | 3
+Automated Testing | pytest suite in each service | 3
+Container Orchestration | Kubernetes manifests (Deployments/Services) | 3
+Environment Config | ConfigMaps and Secrets | 3

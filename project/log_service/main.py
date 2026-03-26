@@ -35,13 +35,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"status": "error", "error": exc.errors()}
     )
 
-
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"status": "error", "error": str(exc.detail)}
     )
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 app.add_middleware(BaseHTTPMiddleware, dispatch=logging_middleware)
 
