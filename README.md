@@ -1,8 +1,13 @@
-# Log Intelligence Service
-It ingests log entries and classifies error logs using Anthropic AI. It also sends notifications for critical events.
+# 🚀 LogAI Suite: Intelligent Microservice Ecosystem
 
-## Course
-UYG414 Special Topics in Software Development — built incrementally across assignments.
+Welcome to the **LogAI Suite**—a sophisticated, cloud-native project designed to rethink how we handle system logs. Instead of treating logs as static text files, this system treats them as **actionable intelligence**.
+
+Developed as part of the **UYG414 Special Topics in Software Development** course, this ecosystem has evolved from a single service into a fully-orchestrated stack of professional-grade microservices.
+
+### What makes it special?
+- **🧠 AI-Powered Analysis**: Integrated with **Anthropic's Claude AI** to automatically classify errors and provide human-readable incident summaries.
+- **📡 Distributed by Design**: A multi-service architecture communicating via REST and asynchronous messaging.
+- **🛡️ Production Ready**: Built with modern DevOps practices, including Docker, Kubernetes, and GitHub Actions.
 
 ## Repo Structure
   ├── hw1/    — HW#1: Core Service
