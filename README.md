@@ -1,13 +1,13 @@
-# logai suite: intelligent microservice ecosystem
+# LogAI Suite: Intelligent Microservice Ecosystem
 
-welcome to the logai suite—a sophisticated, cloud-native project designed to rethink how we handle system logs. instead of treating logs as static text files, this system treats them as actionable intelligence.
+Welcome to the LogAI Suite—a sophisticated, cloud-native project designed to rethink how we handle system logs. Instead of treating logs as static text files, this system treats them as actionable intelligence.
 
-developed as part of the uyg414 special topics in software development course, this ecosystem has evolved from a single service into a fully-orchestrated stack of professional-grade microservices.
+Developed as part of the UYG414 Special Topics in Software Development course, this ecosystem has evolved from a single service into a fully-orchestrated stack of professional-grade microservices.
 
-### what makes it special?
-- ai-powered analysis: integrated with anthropic's claude ai to automatically classify errors and provide human-readable incident summaries.
-- distributed by design: a multi-service architecture communicating via rest and asynchronous messaging.
-- production ready: built with modern devops practices, including docker, kubernetes, and github actions.
+### What makes it special?
+- AI-Powered Analysis: Integrated with Anthropic's Claude AI to automatically classify errors and provide human-readable incident summaries.
+- Distributed by Design: A multi-service architecture communicating via REST and asynchronous messaging.
+- Production Ready: Built with modern DevOps practices, including Docker, Kubernetes, and GitHub Actions.
 
 ## Repo Structure
   ├── hw1/    — HW#1: Core Service
