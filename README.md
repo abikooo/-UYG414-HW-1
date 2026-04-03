@@ -12,7 +12,9 @@ Developed as part of the UYG414 Special Topics in Software Development course, t
 ## Repo Structure
   ├── hw1/    — HW#1: Core Service
   ├── hw2/    — HW#2: Distributed System
-  ├── project/— Evolution of services (Latest)
+  ├── hw3/    — HW#3: Production (K8s & CI/CD)
+  ├── hw4/    — HW#4: Observability (ELK & OTEL)
+  ├── project/— Evolution (Cumulative Latest)
   ├── .github/ — CI/CD Pipeline
   └── README.md
 
