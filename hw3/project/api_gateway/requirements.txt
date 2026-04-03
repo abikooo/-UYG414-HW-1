@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+httpx
+python-jose[cryptography]
+pydantic-settings
+pytest
+pytest-asyncio

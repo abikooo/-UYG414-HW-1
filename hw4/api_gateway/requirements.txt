@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+httpx
+python-jose[cryptography]
+pydantic-settings
+pytest
+pytest-asyncio
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-exporter-otlp
+prometheus-fastapi-instrumentator
+tenacity
+python-logstash-async
