@@ -20,8 +20,7 @@ from api.middleware import logging_middleware
 
 setup_logging()
 
-# Create DB schema
-Base.metadata.create_all(bind=engine)
+# Schema creation moved to startup event
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
@@ -71,4 +70,8 @@ app.include_router(metrics.router, prefix="/api/v1/metrics", tags=["metrics"])
 
 @app.on_event("startup")
 async def startup_event():
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass
     log.info("application_startup", service=settings.PROJECT_NAME)

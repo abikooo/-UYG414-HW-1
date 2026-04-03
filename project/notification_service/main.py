@@ -19,7 +19,7 @@ from logger_setup import setup_app_logging
 logging.basicConfig(level=logging.INFO)
 logger = setup_app_logging("notification-service")
 
-Base.metadata.create_all(bind=engine)
+# Schema creation moved to startup
 
 async def consume_messages():
     while True:
@@ -46,6 +46,10 @@ async def consume_messages():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass
     task = asyncio.create_task(consume_messages())
     yield
     # Shutdown

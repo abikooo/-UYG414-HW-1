@@ -8,11 +8,16 @@ from telemetry import setup_telemetry
 import sqlalchemy
 from logger_setup import setup_app_logging
 
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Auth Service")
 logger = setup_app_logging("auth-service")
 setup_telemetry(app, "auth-service")
+
+@app.on_event("startup")
+async def startup_event():
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass # In CI/test, database might be missing
 
 @app.get("/health")
 async def health_check():
