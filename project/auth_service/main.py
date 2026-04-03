@@ -2,24 +2,32 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-
 from core.database import Base, engine
 from api.endpoints import auth
+from telemetry import setup_telemetry
+import sqlalchemy
+from logger_setup import setup_app_logging
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Auth Service")
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(status_code=422, content={"status": "error", "error": exc.errors()})
-
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return JSONResponse(status_code=exc.status_code, content={"status": "error", "error": str(exc.detail)})
+logger = setup_app_logging("auth-service")
+setup_telemetry(app, "auth-service")
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    db_status = "unhealthy"
+    try:
+        with engine.connect() as connection:
+            connection.execute(sqlalchemy.text("SELECT 1"))
+            db_status = "healthy"
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+    
+    return {
+        "status": "healthy" if db_status == "healthy" else "degraded",
+        "service": "auth-service",
+        "database": db_status
+    }
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

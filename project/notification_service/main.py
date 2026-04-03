@@ -12,9 +12,12 @@ from core.database import Base, engine, SessionLocal
 from core.config import settings
 from api.endpoints import notifications
 from services.notification_service import NotificationService
+from telemetry import setup_telemetry
+import sqlalchemy
+from logger_setup import setup_app_logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("notification")
+logger = setup_app_logging("notification-service")
 
 Base.metadata.create_all(bind=engine)
 
@@ -49,6 +52,7 @@ async def lifespan(app: FastAPI):
     task.cancel()
 
 app = FastAPI(title="Notification Service", lifespan=lifespan)
+setup_telemetry(app, "notification-service")
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -60,6 +64,18 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    db_status = "unhealthy"
+    try:
+        with engine.connect() as connection:
+            connection.execute(sqlalchemy.text("SELECT 1"))
+            db_status = "healthy"
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+    
+    return {
+        "status": "healthy" if db_status == "healthy" else "degraded",
+        "service": "notification-service",
+        "database": db_status
+    }
 
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])

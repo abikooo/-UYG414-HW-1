@@ -92,6 +92,23 @@ kubectl apply -f k8s/infrastructure.yaml
 kubectl apply -f k8s/services.yaml
 ```
 
+## Stage 4 — HW#4: Observability & Reliability Engineering
+I made the system monitorable and fault tolerant. I added a centralized logging stack using Elasticsearch, Logstash, and Kibana. Services now send logs to Logstash asynchronously. I integrated OpenTelemetry for distributed tracing. This lets me see the request flow between services in Jaeger. I added Prometheus to scrape metrics from every service. I used Grafana to build a monitoring dashboard. I also improved the health checks. They now verify if the database is reachable. I added retry logic to the API Gateway using the Tenacity library. It automatically retries failed requests to downstream services.
+
+### Observability Tools:
+- **Centralized Logging**: ELK Stack (Elasticsearch, Logstash, Kibana) for log aggregation.
+- **Metrics**: Prometheus for data collection and Grafana for visualization.
+- **Tracing**: OpenTelemetry and Jaeger for request flow analysis.
+- **Fault Tolerance**: Retries for transient failures and robust health probes.
+
+Tool | Port | Purpose
+---|---|---
+Kibana | 5601 | Log search and visualization
+Grafana | 3000 | Metrics dashboards
+Prometheus | 9090 | Metrics collection engine
+Jaeger | 16686 | Distributed tracing UI
+OTEL Collector | 4317 | OpenTelemetry data receiver
+
 ## Environment Variables
 Variable | Used In | Description | Example
 ---|---|---|---
@@ -125,3 +142,8 @@ CI/CD Pipeline | GitHub Actions workflow | 3
 Automated Testing | pytest suite in each service | 3
 Container Orchestration | Kubernetes manifests (Deployments/Services) | 3
 Environment Config | ConfigMaps and Secrets | 3
+Centralized Logging | ELK Stack (Logstash integration) | 4
+Metrics Monitoring | Prometheus and Grafana dashboards | 4
+Distributed Tracing | OpenTelemetry SDK and Jaeger | 4
+Health Checks | Database and dependency validation | 4
+Failure Handling | Tenacity retries and robust error recovery | 4

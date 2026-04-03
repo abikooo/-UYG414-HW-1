@@ -11,6 +11,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from core.database import Base, engine
 from core.logger import setup_logging, log
 from core.config import settings
+from telemetry import setup_telemetry
+import sqlalchemy
+from logger_setup import setup_app_logging
 
 from api.endpoints import logs, health, metrics
 from api.middleware import logging_middleware
@@ -23,6 +26,8 @@ Base.metadata.create_all(bind=engine)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 app = FastAPI(title=settings.PROJECT_NAME)
+logger = setup_app_logging("log-service")
+setup_telemetry(app, "log-service")
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -44,7 +49,19 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    db_status = "unhealthy"
+    try:
+        with engine.connect() as connection:
+            connection.execute(sqlalchemy.text("SELECT 1"))
+            db_status = "healthy"
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+    
+    return {
+        "status": "healthy" if db_status == "healthy" else "degraded",
+        "service": "log-service",
+        "database": db_status
+    }
 
 app.add_middleware(BaseHTTPMiddleware, dispatch=logging_middleware)
 

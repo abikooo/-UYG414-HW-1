@@ -4,23 +4,50 @@ from fastapi.responses import JSONResponse
 from core.config import settings
 from jose import jwt, JWTError
 import logging
+from telemetry import setup_telemetry
+from tenacity import retry, wait_fixed, stop_after_attempt, retry_if_exception_type
+from logger_setup import setup_app_logging
 
 app = FastAPI(title="API Gateway")
-logger = logging.getLogger("uvicorn.error")
+logger = setup_app_logging("api-gateway")
+
+# Setup observability
+setup_telemetry(app, "api-gateway")
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_fixed(1),
+    retry=retry_if_exception_type(httpx.RequestError),
+    reraise=True
+)
+async def forward_request_with_retry(method: str, url: str, headers: dict, body: bytes):
+    async with httpx.AsyncClient() as client:
+        res = await client.request(method=method, url=url, headers=headers, content=body, timeout=5.0)
+        return Response(content=res.content, status_code=res.status_code, headers=dict(res.headers))
 
 async def forward_request(method: str, url: str, headers: dict, body: bytes):
-    async with httpx.AsyncClient() as client:
-        try:
-            res = await client.request(method=method, url=url, headers=headers, content=body, timeout=10.0)
-            return Response(content=res.content, status_code=res.status_code, headers=dict(res.headers))
-        except httpx.RequestError as e:
-            logger.error(f"Downstream service unreachable: {str(e)}")
-            raise HTTPException(status_code=503, detail={"status": "error", "error": f"Downstream service unreachable"})
+    try:
+        return await forward_request_with_retry(method, url, headers, body)
+    except Exception as e:
+        logger.error(f"Downstream service unreachable after retries: {str(e)}")
+        raise HTTPException(status_code=503, detail={"status": "error", "message": "Downstream service failed", "error": str(e)})
+
+@app.get("/health")
+async def health_check():
+    # Simple check for self, downstream service checks can be added
+    return {
+        "status": "healthy",
+        "service": "api-gateway",
+        "dependencies": {
+            "auth_service": "checking...",
+            "log_service": "checking..."
+        }
+    }
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def gateway_route(path: str, request: Request):
     if path == "health":
-        return {"status": "healthy"}
+        return await health_check()
 
     headers = dict(request.headers)
     headers.pop("host", None)
