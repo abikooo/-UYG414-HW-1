@@ -1,63 +1,101 @@
-# UYG414 Microservice Ecosystem — HW Assignment
+# UYG414 Microservice Ecosystem — Cumulative Development
 
-This repository tracks the evolution of a multi-service log and notification system. Each directory represents a specific homework stage.
+This repository documents the evolution of a production-grade microservice ecosystem focused on log management, security, and AI-driven insights. It has been developed in five distinct stages, each introducing critical engineering concepts from infrastructure automation to advanced semantic intelligence.
 
-## Repo Structure
-  ├── hw1/    — HW#1: Core Service
-  ├── hw2/    — HW#2: Distributed System
-  ├── hw3/    — HW#3: Production (K8s & CI/CD)
-  ├── hw4/    — HW#4: Observability (ELK & OTEL)
-  ├── hw5/    — HW#5: Security & AI (RBAC & Claude)
-  ├── project/— Evolution (Cumulative Latest)
-  ├── .github/ — CI/CD Pipeline
-  └── README.md
+---
 
-## Stage 1 — HW#1: Core Service
-I built an API using FastAPI. It has a clean four-layer architecture. It stores logs in PostgreSQL using SQLAlchemy. Error logs trigger an Anthropic Claude API call. This classifies the error type. Authentication uses a static API key header.
+## 🏗 System Architecture (UML)
 
-Method | Path | Description
----|---|---
-POST | `/api/v1/logs` | Ingest a log entry
-GET | `/api/v1/logs` | List logs with filters
+```mermaid
+graph TD
+    User((Client)) -->|HTTPS| Gateway[API Gateway]
+    
+    subgraph "Edge Layer"
+        Gateway -->|Rate Limiting| SlowAPI[SlowAPI Limiter]
+        Gateway -->|JWT Validation| EdgeAuth[Auth Validation]
+    end
+    
+    subgraph "Core Microservices"
+        Gateway -->|HTTP/JWT| AuthSvc[Auth Service]
+        AuthSvc -->|SQLAlchemy| AuthDB[(Auth PostgreSQL)]
+        
+        Gateway -->|HTTP/RBAC| LogSvc[Log Service]
+        LogSvc -->|Store Logs| LogDB[(Logs PostgreSQL)]
+        LogSvc -->|Publish Critical| Rabbit[RabbitMQ Broker]
+        
+        Rabbit -->|Stream Alerts| NotifSvc[Notification Service]
+        NotifSvc -->|SMTP/API| Alerts[System Alerts]
+    end
+    
+    subgraph "Intelligent Logic"
+        LogSvc -->|Invoke| Claude[Anthropic AI - Claude]
+        Claude -.->|Classification| LogSvc
+        Claude -.->|Anomaly Detection| LogSvc
+    end
+    
+    subgraph "Observability Stack"
+        LogSvc -->|Logs| Logstash[Logstash]
+        Logstash -->|Index| Elastic[Elasticsearch]
+        Elastic -->|Visual| Kibana[Kibana UI]
+        
+        Gateway & LogSvc -->|Metrics| Prometheus[Prometheus]
+        Prometheus -->|Dashboard| Grafana[Grafana]
+        
+        Gateway & AuthSvc -->|Traces| OTEL[OpenTelemetry]
+        OTEL -->|Spans| Jaeger[Jaeger UI]
+    end
+```
 
-## Stage 2 — HW#2: Distributed System
-I split the monolith into microservices. They communicate via RabbitMQ and HTTP asynchronously.
-- **API Gateway**: Route requests based on service and check global JWTs.
-- **Auth Service**: Manages accounts and issues secure tokens.
-- **Log Service**: Receives logs and performs AI classification.
-- **Notification Service**: Listens for critical events on RabbitMQ and alerts appropriately.
+---
 
-## Stage 3 — HW#3: Infrastructure & CI/CD
-Deployment automation for cloud readiness.
-- **Kubernetes**: Included manifests for all services, databases, and message brokers.
-- **CI/CD**: Developed a GitHub Actions pipeline that runs automated `pytest` suites on every push and build Docker images.
+## 🛠 Project Stages
 
-## Stage 4 — HW#4: Observability & Reliability
-Production monitoring and fault-tolerance stack.
-- **Centralized Logging**: ELK (Elasticsearch, Logstash, Kibana) integration.
-- **Metrics**: Prometheus + Grafana dashboard.
-- **Distributed Tracing**: OpenTelemetry + Jaeger.
-- **Reliability**: Health checks and Tenacity retries on the gateway.
+### Stage 1 — HW#1: The Core Foundation
+The first stage established the core logic of the system as a monolithic API. 
+- **4-Layer Architecture**: I implemented a robust clean-code pattern separating the API (Controllers), Services (Logic), Repositories (Data Access), and Models (Schemas). This ensured testability and future scalability.
+- **AI Integration**: I integrated **Anthropic Claude** to automatically classify error logs into categories like `DATABASE_ERROR` or `AUTH_ERROR`, providing instant root-cause context.
+- **Persistence**: Used PostgreSQL with SQLAlchemy ORM for reliable, transactional log storage.
 
-## Stage 5 — HW#5: Advanced Security & AI
-I implemented a comprehensive security layer and an advanced AI observation feature. Distributed rate limiting was added to the API Gateway to prevent service abuse. Auth Service was strengthened with Role-Based Access Control (RBAC) and refresh token rotation. I also integrated an "AI Anomaly Detection" system that analyzes historical logs using semantic intelligence to identify potential security threats or cascading system failures.
+### Stage 2 — HW#2: Distributed Microservices
+In this stage, the monolith was refactored into a suite of decoupled microservices to improve fault tolerance and team autonomy.
+- **API Gateway**: Created a central entry point that handles all routing and applies global security checks (JWT validation).
+- **Asynchronous Communication**: Integrated **RabbitMQ** to allow the Log Service to broadcast critical errors to the Notification Service without blocking the main request flow.
+- **JWT Authentication**: Implemented a secure identity provider (`auth_service`) that issues signed tokens, allowing stateless authorization across all services.
 
-### Assignment Coverage (Summary)
+### Stage 3 — HW#3: Cloud Infrastructure & CI/CD
+Stage 3 prepared the system for production-level deployment.
+- **Containerization**: Every service was containerized using Docker, with multi-stage builds to minimize image size and security surface area.
+- **Orchestration**: Developed Kubernetes manifests (`k8s/`) to manage deployments, horizontal scaling, and secure networking within a cluster.
+- **CI/CD Pipeline**: Built a **GitHub Actions** workflow that automates the development lifecycle: it runs `pytest` suites on every push and builds/validates Docker images to prevent regressions.
 
-Feature | Implementation | Stage
----|---|---
-Layered Arch | Clean Separation (API, Service, Repo, Model) | 1
-AI Classification | Log analysis using Claude integration | 1
-Microservices | Multi-service split with RabbitMQ | 2
-API Gateway | Routing and centralized JWT auth | 2
-K8s Deployment | Manifests for orchestration and storage | 3
-CI/CD Pipeline | GitHub Actions with automated tests | 3
-Centralized Logging | ELK Stack (Elasticsearch, Logstash, Kibana) | 4
-Metrics Monitoring | Prometheus and Grafana dashboards | 4
-Distributed Tracing | OpenTelemetry SDK and Jaeger | 4
-Health Checks | Database and dependency validation | 4
-Failure Handling | Tenacity retries and robust recovery | 4
-Role-Based Auth | JWT RBAC and header propagation | 5
-Rate Limiting | Global leaky-bucket rate limiting (SlowAPI) | 5
-AI Anomaly Detect | Semantic pattern analysis of logs (Claude) | 5
-Security Report | Detailed security and AI design report | 5
+### Stage 4 — HW#4: Observability & Reliability
+This stage added deep visibility into the system's performance and improved its resilience.
+- **The ELK Stack**: Integrated Elasticsearch, Logstash, and Kibana for centralized logging. Logs are now searchable across all services in real-time.
+- **Monitoring & Tracing**: Used **OpenTelemetry** and **Prometheus** to map request flows and visualize metrics (request/sec, error rates) in Grafana.
+- **Fault Tolerance**: Implemented "Self-Healing" health checks and **Tenacity retries** at the Edge Gateway, allowing the system to automatically recover from transient network failures.
+
+### Stage 5 — HW#5: Advanced Security & AI
+The final stage introduced hardened security measures and shifted from reactive to predictive AI.
+- **RBAC (Role-Based Access Control)**: Implemented fine-grained permissions. Tokens now include roles which the Gateway propagates to downstream services to strictly enforce access rights.
+- **Distributed Rate Limiting**: Added `slowapi` to the Gateway to prevent Denial-of-Service (DoS) attacks and ensure fair resource usage across all users.
+- **AI Anomaly Detection**: Upgraded the AI logic from simple classification to **predictive pattern analysis**. The system now analyzes historical logs semantically to identify unusual security patterns (like brute-force or injection attempts) before they cause a full system breach.
+
+---
+
+## 🚀 Presentation Highlights
+
+| Feature | Technology | Value Proposition |
+| :--- | :--- | :--- |
+| **Logic** | Python 3.11 / FastAPI | High-performance, async-native execution. |
+| **Identity** | JWT / bcrypt / RBAC | Secure, horizontally scalable authentication. |
+| **Messaging** | RabbitMQ / aio-pika | Event-driven architecture for low latency. |
+| **Observability**| ELK / OTEL / Jaeger | Full-stack visibility and distributed tracing. |
+| **AI** | Claude-3 (Anthropic) | Semantic intelligence for log analysis and security. |
+| **Deployment** | Docker / K8s / GHA | Modern DevOps pipeline and orchestration. |
+
+---
+
+## 📂 Repo Structure Summary
+- `hw1-5/` — Historical stage snapshots.
+- `project/` — The complete, latest version of the ecosystem.
+- `.github/` — Source for the automated CI/CD pipeline.
