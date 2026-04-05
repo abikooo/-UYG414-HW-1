@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: microservices-config
+data:
+  AUTH_SERVICE_URL: "http://auth-service:8001"
+  LOG_SERVICE_URL: "http://log-service:8002"
+  AUTH_DB_NAME: "auth_db"
+  LOG_DB_NAME: "logs_db"
+  NOTIF_DB_NAME: "notification_db"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: microservices-secrets
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "postgres-demo-password"
+  JWT_SECRET_KEY: "super-secret-production-key-change-me"
+  ANTHROPIC_API_KEY: ""

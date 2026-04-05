@@ -14,6 +14,7 @@ Developed as part of the UYG414 Special Topics in Software Development course, t
   ├── hw2/    — HW#2: Distributed System
   ├── hw3/    — HW#3: Production (K8s & CI/CD)
   ├── hw4/    — HW#4: Observability (ELK & OTEL)
+  ├── hw5/    — HW#5: Security & AI (RBAC & Claude)
   ├── project/— Evolution (Cumulative Latest)
   ├── .github/ — CI/CD Pipeline
   └── README.md
@@ -149,3 +150,13 @@ Metrics Monitoring | Prometheus and Grafana dashboards | 4
 Distributed Tracing | OpenTelemetry SDK and Jaeger | 4
 Health Checks | Database and dependency validation | 4
 Failure Handling | Tenacity retries and robust error recovery | 4
+
+## Stage 5 � HW#5: Advanced Security & AI
+I implemented a comprehensive security layer and an advanced AI observation feature. Distributed rate limiting was added to the API Gateway to prevent service abuse. Auth Service was strengthened with Role-Based Access Control (RBAC) and refresh token rotation. I also integrated an 'AI Anomaly Detection' system that analyzes historical logs using semantic intelligence to identify potential security threats or cascading system failures.
+
+Feature | Implementation | Stage
+---|---|---
+Role-Based Auth (RBAC) | JWT claim validation and header propagation | 5
+Rate Limiting | Global leaky-bucket rate limiting via SlowAPI | 5
+AI Anomaly Detection | Semantic pattern analysis of logs (Claude) | 5
+Security Design Report | Comprehensive security and AI report | 5

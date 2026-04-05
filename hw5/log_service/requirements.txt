@@ -1,10 +1,16 @@
 fastapi
 uvicorn
-httpx
-python-jose[cryptography]
+sqlalchemy
+psycopg2-binary
+pydantic
 pydantic-settings
+structlog
+anthropic
+slowapi
+aio-pika
 pytest
 pytest-asyncio
+httpx
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-instrumentation-fastapi
@@ -12,6 +18,3 @@ opentelemetry-exporter-otlp
 prometheus-fastapi-instrumentator
 tenacity
 python-logstash-async
-slowapi
-redis
-pydantic-settings
