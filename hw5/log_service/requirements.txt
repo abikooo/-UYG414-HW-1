@@ -6,6 +6,8 @@ pydantic
 pydantic-settings
 structlog
 anthropic
+torch
+scikit-learn
 slowapi
 aio-pika
 pytest

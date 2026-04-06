@@ -18,18 +18,24 @@
 
 ---
 
-## 2. AI Functionality: Smart Security Observation
+## 2. AI Functionality: Hybrid Security Observation
 
-### 2.1 Feature: AI-Powered Anomaly Detection
-- **Model**: Anthropic Claude-3 (Haiku/Sonnet)
-- **Functionality**: A specialized endpoint `/api/v1/logs/anomalies` that aggregates the last 100 log entries across all services and performs semantic analysis to detect:
-    - **Security Threats**: Patterns of brute-force login attempts or injection signatures.
-    - **Performance Degradation**: Increasing latency trends or cascading failures.
-    - **Unusual Patterns**: Service communication anomalies or mass data exports.
+### 2.1 Two-Tiered AI Architecture
+To ensure both **real-time performance** and **high-quality reasoning**, we implemented a two-tier AI processing pipeline:
+
+#### Tier 1: Local Fast-Lane Anomaly Detection (PyTorch)
+- **Model**: Custom MLP-based Autoencoder implemented in [services/local_ml_service.py](file:///c:/Users/seiil/Desktop/abiko/special-topics/project/log_service/services/local_ml_service.py).
+- **Performance**: <1ms inference per log entry.
+- **Functionality**: Identifies novel or structural anomalies in any log entry (including INFO logs) at the point of ingestion.
+
+#### Tier 2: Deep Semantic Analysis (Anthropic Claude-3)
+- **Trigger**: Activated by high anomaly scores from Tier 1 or critical error levels.
+- **Functionality**: A specialized endpoint `/api/v1/logs/anomalies` that performs:
+    - **Threat Analysis**: Detailed root-cause hypothesis and potential security threat classification.
+    - **Summarization**: Turning batches of recent logs into natural language incident reports.
 
 ### 2.2 Feature: Intelligent Log Classification
-- Every error or critical log is automatically analyzed on ingestion.
-- The AI classifies the root cause (e.g., `DATABASE_ERROR`, `AUTH_ERROR`) into the database, allowing for smart filtering and alerting.
+Every log is first checked by the local PyTorch model. If a log is flagged as anomalous or is a critical error, it is forwarded to the Claude-3 engine for deep semantic classification (e.g., `DATABASE_ERROR`, `AUTH_ERROR`).
 
 ---
 
@@ -47,13 +53,12 @@ graph TD
     Gateway -->|JWT Token| AuthSvc[Auth Service]
     AuthSvc -->|PostgreSQL| AuthDB[(Auth DB)]
     
-    Gateway -->|HTTP + X-User-Role| LogSvc[Log Service]
+    LogSvc -->|1. Fast Anomaly Check| Torch[Local PyTorch ML]
+    LogSvc -->|2. Deep Analysis (If Anomaly)| AISvc[AI Engine - Claude]
+    
     LogSvc -->|PostgreSQL| LogDB[(Logs DB)]
     
-    LogSvc -->|Analyze| AISvc[AI Engine - Claude]
-    
-    LogSvc -->|Critical Events| Rabbit[RabbitMQ]
-    Rabbit -->|Queue| NotifSvc[Notification Service]
+    LogSvc -->|Critical Events| NotifSvc[Notification Service]
 ```
 
 ## 4. AI Feature Demonstration

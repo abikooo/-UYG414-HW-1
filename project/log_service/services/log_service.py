@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from models.log_entry import LogCreate, LogEntryOrm, LogLevel
 from repositories.log_repository import LogRepository
 from services.ai_service import AIService
+from services.local_ml_service import LocalMLService
 from typing import Optional, List
 from uuid import UUID
 from core.config import settings
@@ -14,6 +15,7 @@ class LogService:
     def __init__(self, session: Session):
         self.repository = LogRepository(session)
         self.ai_service = AIService()
+        self.local_ml = LocalMLService()
 
     async def _publish_critical_alert(self, log_data: dict):
         try:
@@ -28,11 +30,23 @@ class LogService:
             log.error("Failed to publish to RabbitMQ", error=str(e))
 
     async def process_log(self, log_in: LogCreate) -> LogEntryOrm:
+        # Tier 1: Local PyTorch Anomaly Detection (Fast Lane)
+        anomaly_score = self.local_ml.get_anomaly_score(log_in.message)
+        is_anomalous = self.local_ml.is_anomalous(log_in.message, threshold=0.8) # Configurable threshold
+
+        # Tier 2: Deep Semantic Analysis (Slow Lane - Only Error/Critical or high anomaly)
         ai_classification = None
-        if log_in.level in [LogLevel.ERROR, LogLevel.CRITICAL]:
-            ai_classification = self.ai_service.classify_log(log_in.message)
+        if log_in.level in [LogLevel.ERROR, LogLevel.CRITICAL] or is_anomalous:
+            ai_classification = self.ai_service.classify_log(f"SCORE:{anomaly_score:.2f} LOG:{log_in.message}")
             
         new_log = self.repository.create(log_in, ai_classification)
+        
+        # Add local ML metadata to response if needed
+        log.info("log_processed", 
+                 id=str(new_log.id), 
+                 level=log_in.level.value, 
+                 anomaly_score=f"{anomaly_score:.4f}",
+                 is_anomalous=is_anomalous)
         
         if log_in.level == LogLevel.CRITICAL:
             await self._publish_critical_alert({
