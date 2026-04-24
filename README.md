@@ -48,6 +48,18 @@ graph TD
 
 ---
 
+## Project Overview & Core Workflow
+
+The **Log Intelligence Service** is a production-grade microservice ecosystem designed to ingest, process, and analyze system logs using a hybrid AI approach. It transforms raw log data into actionable security and operational insights by combining traditional rule-based filtering with advanced semantic intelligence.
+
+### How it Works:
+1.  **Ingestion**: Distributed microservices send logs to the central Log Service via a secured API Gateway.
+2.  **Fast-Lane Analysis (Local)**: A **PyTorch-based Autoencoder** instantly scans every incoming log for structural anomalies (e.g., potential injections or unexpected patterns) in under 1ms.
+3.  **Slow-Lane Analysis (AI)**: Logs flagged as critical or anomalous are automatically forwarded to the **Anthropic Claude-3** engine for deep semantic classification and root-cause hypothesis generation.
+4.  **Alerting & Observation**: Critical insights are broadcasted via **RabbitMQ** for instant notifications, while all telemetry (metrics, traces, logs) is indexed in the **ELK stack** and visualized in **Grafana/Jaeger**.
+
+---
+
 ## Project Stages
 
 ### Stage 1 — HW#1: The Core Foundation
