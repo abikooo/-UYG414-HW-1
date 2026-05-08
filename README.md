@@ -54,8 +54,6 @@ Engineering teams today face three painful realities:
 
 ## 2. About This Project
 
-> A semester-long engineering journey that grew a single Python script into a production-grade, AI-augmented platform — one stage at a time.
-
 <table>
 <tr>
 <td width="33%" valign="top" align="center">
