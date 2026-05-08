@@ -3,7 +3,7 @@
 # Log Intelligence Platform
 ### A Production-Grade Microservice Ecosystem for AI-Driven Log Security & Observability
 
-**UYG414 — Special Topics in Computer Engineering · Final Project**
+**UYG414 — Special Topics · Final Project**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-async-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -60,7 +60,7 @@ Engineering teams today face three painful realities:
 
 #### Course
 **UYG414**
-Special Topics in Computer Engineering
+
 
 </td>
 <td width="33%" valign="top" align="center">
@@ -507,7 +507,7 @@ You will see the Rich TUI banner and a 12-option menu:
 | `q` | Quit | — |
 
 > **For the live presentation:** press `d` after logging in. It auto-ingests a series of escalating logs (INFO → WARNING → ERROR → CRITICAL) so the audience can watch anomaly scores and AI classifications appear in real time.
-
+git 
 ### 10.6 Run the Automated Test Suite (pytest)
 
 Each service ships with its own test directory. Run them all from the repo root:
